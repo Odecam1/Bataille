@@ -73,11 +73,11 @@ export const BattleGame: React.FC = () => {
     card2: PlayingCard,
     newWarPile: PlayingCard[]
   ) => {
-    let winner: "player1" | "player2"
+    let winner: "player" | "computer"
     if (card1.value > card2.value) {
-      winner = "player1"
+      winner = "player"
     } else if (card1.value < card2.value) {
-      winner = "player2"
+      winner = "computer"
     } else {
       handleBattle()
       return
@@ -102,12 +102,9 @@ export const BattleGame: React.FC = () => {
     <div className="flex flex-col items-center bg-green-700 h-screen p-4">
       <h1 className="text-white text-3xl font-bold mb-4">Jeu de la Bataille</h1>
       <div className="flex justify-between w-full max-w-4xl mb-4">
+        <PlayerDeck playerName="Joueur" cardCount={state.player1Deck.length} />
         <PlayerDeck
-          playerName="Joueur 1"
-          cardCount={state.player1Deck.length}
-        />
-        <PlayerDeck
-          playerName="Joueur 2"
+          playerName="Ordinateur"
           cardCount={state.player2Deck.length}
         />
       </div>

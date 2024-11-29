@@ -10,7 +10,7 @@ export type Action =
     }
   | {
       type: "RESOLVE_WINNER"
-      winner: "player1" | "player2"
+      winner: "player" | "computer"
       warPile: PlayingCard[]
     }
   | { type: "HANDLE_BATTLE"; additionalCards: PlayingCard[] }

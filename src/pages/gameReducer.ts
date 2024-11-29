@@ -14,8 +14,8 @@ export const gameReducer: React.Reducer<State, Action> = (
           ...prevState,
           message:
             prevState.player1Deck.length === 0
-              ? "Joueur 2 a gagné!"
-              : "Joueur 1 a gagné!",
+              ? "L'ordinateur a gagné!"
+              : "le joueur a gagné!",
         }
       }
 
@@ -33,11 +33,11 @@ export const gameReducer: React.Reducer<State, Action> = (
 
     case "RESOLVE_WINNER": {
       const newPlayer1Deck =
-        action.winner === "player1"
+        action.winner === "player"
           ? [...prevState.player1Deck.slice(1), ...action.warPile]
           : prevState.player1Deck.slice(1)
       const newPlayer2Deck =
-        action.winner === "player2"
+        action.winner === "computer"
           ? [...prevState.player2Deck.slice(1), ...action.warPile]
           : prevState.player2Deck.slice(1)
 
@@ -47,9 +47,9 @@ export const gameReducer: React.Reducer<State, Action> = (
         player2Deck: newPlayer2Deck,
         warPile: [],
         message:
-          action.winner === "player1"
-            ? "Joueur 1 remporte le tour!"
-            : "Joueur 2 remporte le tour!",
+          action.winner === "player"
+            ? "le joueur remporte le tour!"
+            : "L'ordinateur remporte le tour!",
       }
     }
 
