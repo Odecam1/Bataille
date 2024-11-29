@@ -65,8 +65,8 @@ export const gameReducer: React.Reducer<State, Action> = (
       return {
         ...prevState,
         warPile: [...prevState.warPile, ...action.additionalCards],
-        player1Deck: prevState.player1Deck.slice(3),
-        player2Deck: prevState.player2Deck.slice(3),
+        player1Deck: prevState.player1Deck.slice(2),
+        player2Deck: prevState.player2Deck.slice(2),
         message: "Bataille! Les joueurs ajoutent des cartes supplémentaires.",
       }
 

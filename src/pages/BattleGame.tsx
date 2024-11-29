@@ -63,12 +63,7 @@ export const BattleGame: React.FC = () => {
       return
     }
 
-    const additionalCards = [
-      player1Deck[1],
-      player2Deck[1],
-      player1Deck[2],
-      player2Deck[2],
-    ]
+    const additionalCards = [player1Deck[1], player2Deck[1]]
 
     dispatch({ type: "HANDLE_BATTLE", additionalCards })
   }
