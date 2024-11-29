@@ -1,6 +1,6 @@
 import { FC } from "react"
 
-type Rank =
+export type Rank =
   | "2"
   | "3"
   | "4"
@@ -14,7 +14,7 @@ type Rank =
   | "Q"
   | "K"
   | "A"
-type Suit = "spades" | "hearts" | "diamonds" | "clubs"
+export type Suit = "spades" | "hearts" | "diamonds" | "clubs"
 
 type Props = {
   rank: Rank
@@ -24,9 +24,5 @@ type Props = {
 }
 
 export const Card: FC<Props> = ({ rank, suit, width, height }) => (
-  <img
-    width={width}
-    height={height}
-    src={`/public/cards/${suit}/${rank}.svg`}
-  />
+  <img width={width} height={height} src={`/cards/${suit}/${rank}.svg`} />
 )
