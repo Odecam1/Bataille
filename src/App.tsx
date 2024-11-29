@@ -11,8 +11,17 @@ const App: React.FC = () => {
   const [player2Deck, setPlayer2Deck] = useState(deck.slice(26))
   const [battleCards, setBattleCards] = useState<PlayingCard[]>([])
   const [warPile, setWarPile] = useState<PlayingCard[]>([])
+  const [message, setMessage] = useState("Cliquez pour jouer un tour!")
 
-  const checkGameOver = () =>  player1Deck.length === 0 || player2Deck.length === 0
+  const checkGameOver = () => {
+    const GameOver = player1Deck.length === 0 || player2Deck.length === 0
+    if (GameOver) {
+      setMessage(
+        player1Deck.length === 0 ? "Joueur 2 a gagné!" : "Joueur 1 a gagné!"
+      )
+    }
+    return GameOver
+  }
 
   const resolveRoundWinner = (
     card1: PlayingCard,
@@ -23,10 +32,12 @@ const App: React.FC = () => {
       setPlayer1Deck([...player1Deck.slice(1), ...newWarPile])
       setPlayer2Deck(player2Deck.slice(1))
       setWarPile([])
+      setMessage("Joueur 1 remporte le tour!")
     } else if (card1.value < card2.value) {
       setPlayer2Deck([...player2Deck.slice(1), ...newWarPile])
       setPlayer1Deck(player1Deck.slice(1))
       setWarPile([])
+      setMessage("Joueur 2 remporte le tour!")
     } else {
       handleBattle(newWarPile)
     }
@@ -34,6 +45,7 @@ const App: React.FC = () => {
 
   const handleBattle = (newWarPile: PlayingCard[]) => {
     if (player1Deck.length < 3 || player2Deck.length < 3) {
+      setMessage("Un joueur ne peut pas compléter une bataille, fin du jeu!")
       return
     }
 
@@ -47,7 +59,8 @@ const App: React.FC = () => {
 
     setPlayer1Deck(player1Deck.slice(3))
     setPlayer2Deck(player2Deck.slice(3))
-    }
+    setMessage("Bataille! Les cartes sont ajoutées à la pile.")
+  }
 
   const playTurn = () => {
     if (checkGameOver()) return
@@ -76,6 +89,7 @@ const App: React.FC = () => {
         />
       </div>
       <BattleZone battleCards={battleCards} />
+      <p className="text-white text-lg mb-4">{message}</p>
       <PlayButton onClick={playTurn} />
     </div>
   )
