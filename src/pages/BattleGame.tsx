@@ -1,51 +1,65 @@
-import React, { useState } from "react"
+import React, { useReducer } from "react"
 import { BattleZone } from "../components/BattleZone"
 import { PlayButton } from "../components/PlayButton"
 import { PlayerDeck } from "../components/PlayerDeck"
 import { allDeck, PlayingCard } from "../utils/constants"
 import { shuffleArray } from "../utils/functions"
+import { gameReducer } from "./gameReducer"
+import { State } from "./types"
+
+const initializeDecks = () => {
+  const deck = shuffleArray(allDeck)
+  return {
+    player1Deck: deck.slice(0, 26),
+    player2Deck: deck.slice(26),
+    battleCards: [],
+    warPile: [],
+    message: "Cliquez pour jouer un tour!",
+  }
+}
+
+const initialState: State = {
+  player1Deck: [],
+  player2Deck: [],
+  battleCards: [],
+  warPile: [],
+  message: "Cliquez pour jouer un tour!",
+}
 
 export const BattleGame: React.FC = () => {
-  const [deck] = useState(shuffleArray(allDeck))
-  const [player1Deck, setPlayer1Deck] = useState(deck.slice(0, 26))
-  const [player2Deck, setPlayer2Deck] = useState(deck.slice(26))
-  const [battleCards, setBattleCards] = useState<PlayingCard[]>([])
-  const [warPile, setWarPile] = useState<PlayingCard[]>([])
-  const [message, setMessage] = useState("Cliquez pour jouer un tour!")
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    initialState,
+    initializeDecks
+  )
 
   const checkGameOver = () => {
-    const GameOver = player1Deck.length === 0 || player2Deck.length === 0
-    if (GameOver) {
-      setMessage(
-        player1Deck.length === 0 ? "Joueur 2 a gagné!" : "Joueur 1 a gagné!"
-      )
+    const { player1Deck, player2Deck } = state
+    const gameOver = player1Deck.length === 0 || player2Deck.length === 0
+
+    if (gameOver) {
+      const winner = player1Deck.length === 0 ? "Joueur 2" : "Joueur 1"
+      dispatch({ type: "GAME_OVER", winner })
     }
-    return GameOver
+
+    return gameOver
   }
 
-  const resolveRoundWinner = (
-    card1: PlayingCard,
-    card2: PlayingCard,
-    newWarPile: PlayingCard[]
-  ) => {
-    if (card1.value > card2.value) {
-      setPlayer1Deck([...player1Deck.slice(1), ...newWarPile])
-      setPlayer2Deck(player2Deck.slice(1))
-      setWarPile([])
-      setMessage("Joueur 1 remporte le tour!")
-    } else if (card1.value < card2.value) {
-      setPlayer2Deck([...player2Deck.slice(1), ...newWarPile])
-      setPlayer1Deck(player1Deck.slice(1))
-      setWarPile([])
-      setMessage("Joueur 2 remporte le tour!")
-    } else {
-      handleBattle(newWarPile)
-    }
+  const prepareTurn = () => {
+    const { player1Deck, player2Deck, warPile } = state
+    const card1 = player1Deck[0]
+    const card2 = player2Deck[0]
+    const newWarPile = [...warPile, card1, card2]
+
+    return { card1, card2, newWarPile }
   }
 
-  const handleBattle = (newWarPile: PlayingCard[]) => {
+  const handleBattle = () => {
+    const { player1Deck, player2Deck } = state
+
     if (player1Deck.length < 3 || player2Deck.length < 3) {
-      setMessage("Un joueur ne peut pas compléter une bataille, fin du jeu!")
+      const winner = player1Deck.length < 3 ? "Joueur 2" : "Joueur 1"
+      dispatch({ type: "GAME_OVER", winner })
       return
     }
 
@@ -55,21 +69,37 @@ export const BattleGame: React.FC = () => {
       player1Deck[2],
       player2Deck[2],
     ]
-    setWarPile([...newWarPile, ...additionalCards])
 
-    setPlayer1Deck(player1Deck.slice(3))
-    setPlayer2Deck(player2Deck.slice(3))
-    setMessage("Bataille! Les cartes sont ajoutées à la pile.")
+    dispatch({ type: "HANDLE_BATTLE", additionalCards })
+  }
+
+  const resolveRoundWinner = (
+    card1: PlayingCard,
+    card2: PlayingCard,
+    newWarPile: PlayingCard[]
+  ) => {
+    let winner: "player1" | "player2"
+    if (card1.value > card2.value) {
+      winner = "player1"
+    } else if (card1.value < card2.value) {
+      winner = "player2"
+    } else {
+      handleBattle()
+      return
+    }
+
+    dispatch({
+      type: "RESOLVE_WINNER",
+      winner,
+      warPile: newWarPile,
+    })
   }
 
   const playTurn = () => {
     if (checkGameOver()) return
 
-    const card1 = player1Deck[0]
-    const card2 = player2Deck[0]
-    const newWarPile = [...warPile, card1, card2]
-
-    setBattleCards([card1, card2])
+    const { card1, card2, newWarPile } = prepareTurn()
+    dispatch({ type: "PLAY_TURN" })
     resolveRoundWinner(card1, card2, newWarPile)
   }
 
@@ -79,17 +109,18 @@ export const BattleGame: React.FC = () => {
       <div className="flex justify-between w-full max-w-4xl mb-4">
         <PlayerDeck
           playerName="Joueur 1"
-          cardCount={player1Deck.length}
-          color="bg-blue-500"
+          cardCount={state.player1Deck.length}
         />
         <PlayerDeck
           playerName="Joueur 2"
-          cardCount={player2Deck.length}
-          color="bg-red-500"
+          cardCount={state.player2Deck.length}
         />
       </div>
-      <BattleZone battleCards={battleCards} />
-      <p className="text-white text-lg mb-4">{message}</p>
+      <p className="text-white text-lg ">
+        Carte en jeu : {state.warPile.length}
+      </p>
+      <BattleZone battleCards={state.battleCards} />
+      <p className="text-white text-lg mb-4">{state.message}</p>
       <PlayButton onClick={playTurn} />
     </div>
   )
