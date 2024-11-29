@@ -10,27 +10,54 @@ const App: React.FC = () => {
   const [player1Deck, setPlayer1Deck] = useState(deck.slice(0, 26))
   const [player2Deck, setPlayer2Deck] = useState(deck.slice(26))
   const [battleCards, setBattleCards] = useState<PlayingCard[]>([])
+  const [warPile, setWarPile] = useState<PlayingCard[]>([])
 
-  const playTurn = () => {
-    if (player1Deck.length === 0 || player2Deck.length === 0) {
+  const checkGameOver = () =>  player1Deck.length === 0 || player2Deck.length === 0
+
+  const resolveRoundWinner = (
+    card1: PlayingCard,
+    card2: PlayingCard,
+    newWarPile: PlayingCard[]
+  ) => {
+    if (card1.value > card2.value) {
+      setPlayer1Deck([...player1Deck.slice(1), ...newWarPile])
+      setPlayer2Deck(player2Deck.slice(1))
+      setWarPile([])
+    } else if (card1.value < card2.value) {
+      setPlayer2Deck([...player2Deck.slice(1), ...newWarPile])
+      setPlayer1Deck(player1Deck.slice(1))
+      setWarPile([])
+    } else {
+      handleBattle(newWarPile)
+    }
+  }
+
+  const handleBattle = (newWarPile: PlayingCard[]) => {
+    if (player1Deck.length < 3 || player2Deck.length < 3) {
       return
     }
 
+    const additionalCards = [
+      player1Deck[1],
+      player2Deck[1],
+      player1Deck[2],
+      player2Deck[2],
+    ]
+    setWarPile([...newWarPile, ...additionalCards])
+
+    setPlayer1Deck(player1Deck.slice(3))
+    setPlayer2Deck(player2Deck.slice(3))
+    }
+
+  const playTurn = () => {
+    if (checkGameOver()) return
+
     const card1 = player1Deck[0]
     const card2 = player2Deck[0]
-    setBattleCards([card1, card2])
+    const newWarPile = [...warPile, card1, card2]
 
-    if (card1.value > card2.value) {
-      setPlayer1Deck([...player1Deck.slice(1), card1, card2])
-      setPlayer2Deck(player2Deck.slice(1))
-    } else if (card1.value < card2.value) {
-      setPlayer2Deck([...player2Deck.slice(1), card2, card1])
-      setPlayer1Deck(player1Deck.slice(1))
-      // l'égaliter ne gère pas encore la carte cacher mais juste la prochaine carte
-    } else {
-      setPlayer1Deck(player1Deck.slice(1))
-      setPlayer2Deck(player2Deck.slice(1))
-    }
+    setBattleCards([card1, card2])
+    resolveRoundWinner(card1, card2, newWarPile)
   }
 
   return (
